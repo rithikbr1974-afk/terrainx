@@ -1,0 +1,104 @@
+<!doctype html><html lang=en><head><meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name=theme-color content="#0B1120"><title>TerrainX</title>
+<style>
+:root{--bg:#0B1120;--card:#131C30;--line:#26324D;--text:#F2F5FA;--sub:#93A0BC;--cyan:#38C6F4;--blue:#1A73E8;--green:#1FB86A;--orange:#F07B1A;--red:#FF4D4D}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
+.app{display:grid;grid-template-columns:1fr minmax(260px,32%) 1fr;grid-template-rows:auto 1fr auto;height:100%;padding:max(10px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) 10px max(12px,env(safe-area-inset-left));gap:10px}
+.top{grid-column:1/4;display:flex;align-items:center;gap:14px;font-size:14px;color:var(--sub)}
+.brand{font-weight:700;color:var(--text);font-size:17px;letter-spacing:1px}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--red);box-shadow:0 0 8px var(--red)}
+.dot.ok{background:var(--green);box-shadow:0 0 8px var(--green)}.dot.wait{background:#FFB020;box-shadow:0 0 8px #FFB020}
+.maxc{display:flex;align-items:center;gap:8px;color:var(--text);font-weight:700;font-size:13px;letter-spacing:1px}
+.maxc input{width:150px;accent-color:var(--orange);touch-action:pan-x}
+.maxc b{min-width:42px;color:var(--orange);font-variant-numeric:tabular-nums}
+.sp{flex:1}.pill{border:1px solid var(--line);border-radius:20px;padding:3px 10px;font-variant-numeric:tabular-nums}
+.pad{position:relative;background:var(--card);border:1px solid var(--line);border-radius:22px;overflow:hidden}
+.pad .lab{position:absolute;left:14px;top:10px;font-size:12px;letter-spacing:2px;color:var(--sub)}
+.track{position:absolute;background:#0E1628;border-radius:40px}
+#padL .track{left:50%;top:12%;bottom:12%;width:84px;transform:translateX(-50%)}
+#padR .track{top:50%;left:10%;right:10%;height:84px;transform:translateY(-50%)}
+.knob{position:absolute;width:84px;height:84px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#7FDCFF,var(--cyan));box-shadow:0 0 22px rgba(56,198,244,.55);left:50%;top:50%;transform:translate(-50%,-50%)}
+.mid{display:flex;flex-direction:column;gap:10px;min-height:0}
+#stop{flex:0 0 auto;height:72px;border-radius:18px;border:2px solid var(--red);background:transparent;color:var(--red);font-size:24px;font-weight:800;letter-spacing:3px}
+#stop.on{background:var(--red);color:#fff;box-shadow:0 0 26px rgba(255,77,77,.6)}
+.modes{display:flex;flex-direction:column;gap:8px;flex:1;min-height:0}
+.mode{flex:1;border-radius:16px;border:2px solid;background:transparent;font-size:18px;font-weight:800;letter-spacing:1px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:44px}
+.mode small{font-size:11px;font-weight:500;opacity:.8;letter-spacing:0}
+.mode[data-m="0"]{border-color:var(--blue);color:var(--blue)}.mode[data-m="1"]{border-color:var(--green);color:var(--green)}.mode[data-m="2"]{border-color:var(--orange);color:var(--orange)}
+.mode.on{color:#fff}.mode[data-m="0"].on{background:var(--blue);box-shadow:0 0 18px rgba(26,115,232,.6)}
+.mode[data-m="1"].on{background:var(--green);box-shadow:0 0 18px rgba(31,184,106,.6)}.mode[data-m="2"].on{background:var(--orange);box-shadow:0 0 18px rgba(240,123,26,.6)}
+#light{height:44px;border-radius:14px;border:2px solid var(--line);background:transparent;color:var(--sub);font-weight:700;letter-spacing:2px}
+#light.on{border-color:#FFE27A;color:#FFE27A}
+.bot{grid-column:1/4;display:flex;gap:16px;align-items:center;font-size:12px;color:var(--sub)}
+.bar{flex:1;height:8px;background:#0E1628;border-radius:4px;position:relative;overflow:hidden}
+.bar i{position:absolute;top:0;bottom:0;left:50%;width:0;background:var(--cyan)}
+#banner{position:fixed;inset:0;display:none;align-items:center;justify-content:center;font-size:56px;font-weight:900;letter-spacing:8px;color:var(--red);pointer-events:none;text-shadow:0 0 30px rgba(255,77,77,.7)}
+#rot{position:fixed;inset:0;background:var(--bg);display:none;align-items:center;justify-content:center;text-align:center;font-size:20px;color:var(--sub);padding:30px}
+@media (orientation:portrait) and (max-width:700px){#rot{display:flex}}
+</style></head><body>
+<div class=app>
+ <div class=top><span class=dot id=dot></span><span class=brand>TERRAINX</span><span id=st>Connecting…</span><span class=sp></span>
+  <label class=maxc>MAX <input type=range id=max min=20 max=100 step=5 value=100><b id=maxv>--%</b></label>
+  <span class=pill id=ping>-- ms</span><span class=pill id=rate>-- pkt/s</span></div>
+ <div class=pad id=padL><span class=lab>THROTTLE</span><div class=track></div><div class=knob id=kL></div></div>
+ <div class=mid>
+  <button id=stop>STOP</button>
+  <div class=modes>
+   <button class=mode data-m=0>SLOW<small>bridge · narrows · descent</small></button>
+   <button class="mode on" data-m=1>NORMAL<small>default</small></button>
+   <button class=mode data-m=2>FULL<small>climb · sand · leap</small></button>
+  </div>
+  <button id=light>LIGHT</button>
+ </div>
+ <div class=pad id=padR><span class=lab>STEERING</span><div class=track></div><div class=knob id=kR></div></div>
+ <div class=bot>DRIVE<div class=bar><i id=bD></i></div>STEER<div class=bar><i id=bS></i></div><span id=keys>Keys: W A S D · 1 2 3 · Space · L</span></div>
+</div>
+<div id=banner>STOPPED</div>
+<div id=rot>Turn your phone sideways to drive.</div>
+<script>
+const $=id=>document.getElementById(id);
+const S={thr:0,str:0,mode:1,stop:false,light:false,max:0};let ws,ok=false,sent=0,maxTouched=false;
+const buzz=ms=>{try{navigator.vibrate&&navigator.vibrate(ms)}catch(e){}};
+function flags(){let f=0;if(S.mode==0)f|=1;if(S.stop)f|=2;if(S.mode==2)f|=4;if(S.light)f|=8;return f}
+function setStatus(c,t){$('dot').className='dot '+c;$('st').textContent=t}
+function connect(){
+ setStatus('wait','Connecting…');
+ ws=new WebSocket('ws://'+(location.hostname||'192.168.4.1')+':81/');
+ ws.onopen=()=>{ok=true;setStatus('ok','Connected')};
+ ws.onclose=()=>{ok=false;setStatus('','Disconnected · retrying');setTimeout(connect,400)};
+ ws.onerror=()=>ws.close();
+ ws.onmessage=e=>{const d=e.data;
+  if(d[0]=='q'){$('ping').textContent=(Date.now()-Number(d.slice(1)))+' ms'}
+  else if(d[0]=='t'){const v=d.split(',');bar('bD',+v[1]);bar('bS',+v[2]);$('rate').textContent=v[5]+' pkt/s';
+   if(!maxTouched&&+v[6]){$('max').value=v[6];$('maxv').textContent=v[6]+'%'}
+   if(+v[4]&&!S.stop&&ok)setStatus('wait','Failsafe');else if(ok)setStatus('ok','Connected')}};
+}
+function bar(id,p){const el=$(id);el.style.width=Math.abs(p)/2+'%';el.style.left=(p<0?50-Math.abs(p)/2:50)+'%'}
+connect();
+setInterval(()=>{if(ok&&ws.readyState==1){ws.send(S.thr+','+S.str+','+flags()+','+S.max);sent++}},50);
+$('max').addEventListener('input',e=>{maxTouched=true;S.max=+e.target.value;$('maxv').textContent=S.max+'%';buzz(5)});
+setInterval(()=>{if(ok&&ws.readyState==1)ws.send('p'+Date.now())},1000);
+function pad(el,knob,vertical,set){let id=null;
+ const mv=e=>{const r=el.getBoundingClientRect();
+  let v=vertical?-(e.clientY-r.top-r.height/2)/(r.height*0.38):(e.clientX-r.left-r.width/2)/(r.width*0.40);
+  v=Math.max(-1,Math.min(1,v));if(Math.abs(v)<0.06)v=0;set(Math.round(v*100));
+  if(vertical)knob.style.top=(50-v*38)+'%';else knob.style.left=(50+v*40)+'%'};
+ el.addEventListener('pointerdown',e=>{id=e.pointerId;el.setPointerCapture(id);mv(e);buzz(8)});
+ el.addEventListener('pointermove',e=>{if(e.pointerId===id)mv(e)});
+ const up=e=>{if(e.pointerId!==id)return;id=null;set(0);knob.style.top='50%';knob.style.left='50%'};
+ el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);
+}
+pad($('padL'),$('kL'),true,v=>S.thr=v);pad($('padR'),$('kR'),false,v=>S.str=v);
+function setMode(m){S.mode=m;document.querySelectorAll('.mode').forEach(b=>b.classList.toggle('on',+b.dataset.m==m));buzz(15)}
+document.querySelectorAll('.mode').forEach(b=>b.addEventListener('pointerdown',()=>setMode(+b.dataset.m)));
+function toggleStop(){S.stop=!S.stop;$('stop').classList.toggle('on',S.stop);$('stop').textContent=S.stop?'RESUME':'STOP';$('banner').style.display=S.stop?'flex':'none';buzz(S.stop?60:15)}
+$('stop').addEventListener('pointerdown',toggleStop);
+$('light').addEventListener('pointerdown',()=>{S.light=!S.light;$('light').classList.toggle('on',S.light);buzz(10)});
+const K={};function keys(){S.thr=(K.w?100:0)-(K.s?100:0);S.str=(K.d?100:0)-(K.a?100:0)}
+addEventListener('keydown',e=>{const k=e.key.toLowerCase();if('wasd'.includes(k)&&k.length==1){K[k]=1;keys()}
+ if(k=='1')setMode(0);if(k=='2')setMode(1);if(k=='3')setMode(2);if(k==' '){e.preventDefault();if(!e.repeat)toggleStop()}if(k=='l'&&!e.repeat)$('light').dispatchEvent(new Event('pointerdown'))});
+addEventListener('keyup',e=>{const k=e.key.toLowerCase();if('wasd'.includes(k)&&k.length==1){K[k]=0;keys()}});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){S.thr=S.str=0}});
+</script></body></html>

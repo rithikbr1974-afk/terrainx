@@ -1,0 +1,20 @@
+# secrets and personal data
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*session*.json
+credentials*.json
+token*.json
+data/
+logs/
+*.log
+# environments and builds
+.venv*/
+__pycache__/
+node_modules/
+build/
+dist/
+out/
+*.mp4
